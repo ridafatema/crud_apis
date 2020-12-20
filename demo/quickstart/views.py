@@ -1,10 +1,11 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
-from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
 from .models import Task, User
-from .serializers import TaskSerializer, UserSerializer, UserTaskSerializer
+from .serializers import TaskSerializer, UserSerializer, UserTaskSerializer, TaskUserSerializer
 
 
 # CRUD - Task
@@ -48,7 +49,7 @@ class TaskDetail(APIView):
 
 class TaskUser(APIView):
     def get(self, request):
-        user = User.objects.get(email_address='syiamrida11@gmail.com')
+        user = User.objects.get(email_address='rida@gmail.com')
         tasks = user.tasks.all()
         serializer = TaskSerializer(tasks, many=True)
         return Response({'Tasks of a user': serializer.data})
@@ -60,17 +61,29 @@ class UserList(APIView):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):    # not working
+    def post(self, request, format=None):
         serializer = UserTaskSerializer(data=request.data)
         print(request.data)
 
         if serializer.is_valid():
-            print("valid")
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class TaskViewSet(ModelViewSet):
+    queryset = Task.objects.all()
+    serializer_class = TaskUserSerializer
 
 
+class UserViewSet(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'email_address'
+    lookup_value_regex = '[\w.@]+'
+
+
+class UserTaskViewSet(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserTaskSerializer
 

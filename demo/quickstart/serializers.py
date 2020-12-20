@@ -8,16 +8,20 @@ class TaskSerializer(ModelSerializer):
         model = Task
         fields = ('id', 'title', 'task', 'created_at')
 
-    def create(self, validated_data):  # validated data will contain the user passed inside the save
+    def create(self, validated_data):
         return Task.objects.create(**validated_data)
-    #    return super().create(validated_data)
+
+
+class TaskUserSerializer(ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ('id', 'title', 'task', 'created_at', 'user')
 
 
 class UserSerializer(ModelSerializer):
-    tasks = TaskSerializer(many=True)
     class Meta:
         model = User
-        fields = ('name', 'email_address', 'tasks')
+        fields = ('name', 'email_address')
 
     def validate_email_address(self, value):
         if 'gmail' not in value:
@@ -31,6 +35,7 @@ class UserSerializer(ModelSerializer):
 
 class UserTaskSerializer(ModelSerializer):
     tasks = TaskSerializer(many=True)
+
     class Meta:
         model = User
         fields = ('name', 'email_address', 'tasks')
@@ -40,12 +45,4 @@ class UserTaskSerializer(ModelSerializer):
         user = User.objects.create(**validated_data)
         for task in task_data:
             Task.objects.create(user=user, **task)
-
         return user
-
-
-
-
-
-
-

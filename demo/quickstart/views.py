@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
-from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
 from .models import Task, User
 from .serializers import TaskSerializer, UserSerializer, UserTaskSerializer
 
@@ -71,6 +72,17 @@ class UserList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class TaskViewSet(ModelViewSet):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer()
 
 
+class UserViewSet(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer()
+
+
+class UserTaskViewSet(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserTaskSerializer()
 

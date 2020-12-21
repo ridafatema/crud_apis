@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -74,6 +75,12 @@ class UserList(APIView):
 class TaskViewSet(ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskUserSerializer
+
+    @action(detail=False, methods=['GET'])
+    def filter_tasks(self, request, **kwargs):
+        queryset = self.get_queryset().filter(title='django')
+        serializer = TaskSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class UserViewSet(ModelViewSet):

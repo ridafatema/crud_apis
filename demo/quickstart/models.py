@@ -20,5 +20,5 @@ class Task(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return "{} - {} - {} - {}". format(self.title, self.task, self.created_at, self.user)
+        return "{} - {} - {} - {} - {}". format(self.title, self.task, self.created_at, self.user, self.id)
 

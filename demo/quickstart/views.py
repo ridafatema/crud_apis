@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Task, User
-from .serializers import TaskSerializer, UserSerializer, UserTaskSerializer, TaskUserSerializer
+from .serializers import TaskSerializer, UserSerializer, UserTaskSerializer, TaskUserSerializer, TaskSimpleSerializer, \
+    UserSimpleSerializer
 
 
 # CRUD - Task
@@ -16,9 +17,9 @@ class TasksList(APIView):
         serializer = TaskSerializer(tasks, many=True)
         return Response({'Tasks': serializer.data})
 
-    def post(self, request, format=None): # create a task for an existing user
+    def post(self, request, format=None):  # create a task for an existing user
         user = request.data['user']
-        user_instance = User.objects.get(email_address = user)
+        user_instance = User.objects.get(email_address=user)
         task_serializer = TaskSerializer(data=request.data)
         if task_serializer.is_valid():
             task = task_serializer.save(user=user_instance)
@@ -31,7 +32,6 @@ class TaskDetail(APIView):
         tasks = get_object_or_404(Task, pk=pk)
         serializer = TaskSerializer(tasks)
         return Response({'Task': serializer.data})
-
 
     def put(self, request, pk):
         task = get_object_or_404(Task, pk=pk)
@@ -64,11 +64,45 @@ class UserList(APIView):
 
     def post(self, request, format=None):
         serializer = UserTaskSerializer(data=request.data)
-        print(request.data)
-
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserSimple(APIView):
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSimpleSerializer(users, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = UserSimpleSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserSimpleDetail(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSimpleSerializer
+    lookup_field = 'email_address'
+    lookup_value_regex = '[\w.@]+'
+
+    def get(self, request, pk):
+        users = get_object_or_404(User, pk=pk)
+        serializer = UserSimpleSerializer(users)
+        return Response({'User': serializer.data})
+
+    def put(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserSimpleSerializer(data=request.data)
+        print(request.data)
+        if serializer.is_valid():
+            # serializer.save()
+            serializer.save()
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -78,7 +112,7 @@ class TaskViewSet(ModelViewSet):
 
     @action(detail=False, methods=['GET'])
     def filter_tasks(self, request, **kwargs):
-        queryset = self.get_queryset().filter(title='django')
+        queryset = self.get_queryset().filter(title='django')  # get_qs() returns the list of items for this view
         serializer = TaskSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -93,4 +127,3 @@ class UserViewSet(ModelViewSet):
 class UserTaskViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserTaskSerializer
-

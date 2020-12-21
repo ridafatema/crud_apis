@@ -46,3 +46,29 @@ class UserTaskSerializer(ModelSerializer):
         for task in task_data:
             Task.objects.create(user=user, **task)
         return user
+
+
+class TaskSimpleSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=20)
+    task = serializers.CharField(max_length=30)
+    created_at = serializers.DateField()
+
+
+class UserSimpleSerializer(serializers.Serializer):
+    # tasks = TaskSimpleSerializer(many=True)
+
+    """
+    Simple Serailizer
+    """
+    email_address = serializers.EmailField()
+    name = serializers.CharField(max_length=20)
+
+    def create(self, validated_data):
+        task_data = validated_data.pop('tasks')
+        user = User.objects.create(**validated_data)
+        for task in task_data:
+            Task.objects.create(user=user, **task)
+        return user
+
+    def __delete__(self, instance):
+        return instance.delete()
